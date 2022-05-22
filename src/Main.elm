@@ -3,22 +3,22 @@ module Main exposing (main)
 import Angle
 import Block3d
 import Browser
+import Browser.Events
 import Camera3d
 import Color
 import Direction3d
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (disabled)
-import Html.Events exposing (onClick)
-import Length exposing (Length)
-import Pixels exposing (Pixels)
-import Point3d exposing (Point3d)
+import Json.Decode
+import Length
+import Pixels
+import Point3d
 import Scene3d
 import Scene3d.Material as Material
 import Sphere3d
 import Viewpoint3d
 
 
-main : Program () Model msg
+main : Program () Model Msg
 main =
     Browser.element
         { init = init
@@ -29,26 +29,58 @@ main =
 
 
 type alias Model =
-    { text : String
+    { cursor : Maybe ( Int, Int )
     }
 
 
-init : () -> ( Model, Cmd msg )
+init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model "hi", Cmd.none )
+    ( Model Nothing, Cmd.none )
 
 
-update : a -> Model -> Model
-update _ model =
-    model
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        MouseDown position ->
+            { model | cursor = Just position }
+
+        MouseMove position ->
+            { model
+                | cursor =
+                    if model.cursor == Nothing then
+                        Nothing
+
+                    else
+                        Just position
+            }
+
+        MouseUp ->
+            { model | cursor = Nothing }
 
 
-subscriptions : a -> Sub msg
+type Msg
+    = MouseDown ( Int, Int )
+    | MouseMove ( Int, Int )
+    | MouseUp
+
+
+subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.batch []
+    Sub.batch
+        [ Browser.Events.onMouseDown (decodeMouse MouseDown)
+        , Browser.Events.onMouseMove (decodeMouse MouseMove)
+        , Browser.Events.onMouseUp (Json.Decode.succeed MouseUp)
+        ]
 
 
-view : a -> Html msg
+decodeMouse : (( Int, Int ) -> Msg) -> Json.Decode.Decoder Msg
+decodeMouse toMsg =
+    Json.Decode.map2 (\x y -> toMsg ( x, y ))
+        (Json.Decode.field "pageX" Json.Decode.int)
+        (Json.Decode.field "pageY" Json.Decode.int)
+
+
+view : Model -> Html Msg
 view model =
     div []
         [ Scene3d.unlit
@@ -84,4 +116,10 @@ view model =
                     )
                 ]
             }
+        , case model.cursor of
+            Nothing ->
+                div [] []
+
+            Just position ->
+                text (position |> Tuple.first |> String.fromInt)
         ]
