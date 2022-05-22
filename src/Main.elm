@@ -42,7 +42,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model Nothing Quaternion.identity, Cmd.none )
+    ( Model Nothing (Quaternion.identity |> Quaternion.mul (Quaternion.xRotation 1) |> Quaternion.mul (Quaternion.yRotation 1)), Cmd.none )
 
 
 update : Msg -> Model -> Model
