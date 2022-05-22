@@ -7,6 +7,7 @@ import Browser
 import Browser.Events
 import Camera3d
 import Color
+import Cylinder3d
 import Direction3d
 import FormatNumber
 import FormatNumber.Locales as Locales
@@ -42,7 +43,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model Nothing (Quaternion.identity |> Quaternion.mul (Quaternion.xRotation 1) |> Quaternion.mul (Quaternion.yRotation 1)), Cmd.none )
+    ( Model Nothing Quaternion.identity, Cmd.none )
 
 
 update : Msg -> Model -> Model
@@ -244,6 +245,39 @@ view model =
 
         blockEntity =
             Scene3d.mesh (Material.matte Color.blue) blockMesh
+
+        cylinderInfo =
+            { radius = Length.meters 0.1
+            , length = Length.meters 2
+            }
+
+        axiesEntity =
+            [ Scene3d.cylinder
+                (Material.color Color.red)
+                (Cylinder3d.startingAt
+                    Point3d.origin
+                    Direction3d.x
+                    cylinderInfo
+                )
+            , Scene3d.cylinder
+                (Material.color Color.blue)
+                (Cylinder3d.startingAt
+                    Point3d.origin
+                    Direction3d.y
+                    cylinderInfo
+                )
+            , Scene3d.cylinder
+                (Material.color Color.green)
+                (Cylinder3d.startingAt
+                    Point3d.origin
+                    Direction3d.z
+                    cylinderInfo
+                )
+            ]
+                |> Scene3d.group
+
+        rotate entity =
+            entity
                 |> Scene3d.rotateAround Axis3d.x (Angle.radians roll)
                 |> Scene3d.rotateAround Axis3d.y (Angle.radians pitch)
                 |> Scene3d.rotateAround Axis3d.z (Angle.radians yaw)
@@ -263,7 +297,7 @@ view model =
         [ h1 []
             [ text "Drag The Mouse To Rotate The Cube" ]
         , Scene3d.sunny
-            { entities = [ blockEntity ]
+            { entities = [ blockEntity, axiesEntity ] |> Scene3d.group |> rotate |> List.singleton
             , camera = camera
             , upDirection = Direction3d.z
             , sunlightDirection = Direction3d.yz (Angle.degrees -120)
