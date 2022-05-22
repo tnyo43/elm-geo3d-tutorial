@@ -12,7 +12,8 @@
       "ianmackenzie/elm-3d-camera": "3.1.0",
       "ianmackenzie/elm-3d-scene": "1.0.1",
       "ianmackenzie/elm-geometry": "3.9.1",
-      "ianmackenzie/elm-units": "2.9.0"
+      "ianmackenzie/elm-units": "2.9.0",
+      "nphollon/geo3d": "2.1.2"
     },
     "indirect": {
       "elm/random": "1.0.0",
