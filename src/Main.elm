@@ -10,7 +10,7 @@ import Color
 import Direction3d
 import FormatNumber
 import FormatNumber.Locales as Locales
-import Html exposing (Html, div, table, td, text, tr)
+import Html exposing (Html, div, h1, h2, h3, table, td, text, tr)
 import Json.Decode
 import Json.Encode
 import Length
@@ -225,7 +225,15 @@ viewQuaternion q =
 
 viewEulerAngles : ( Float, Float, Float ) -> Html Msg
 viewEulerAngles ( roll, pitch, yaw ) =
-    [ ( "roll", roll ), ( "pitch", pitch ), ( "yaw", yaw ) ] |> List.map (\( key, value ) -> tr [] [ td [] [ text key ], td [] [ text (value / Basics.pi * 180 |> formatFloat) ] ]) |> table []
+    [ ( "roll", "X", roll ), ( "pitch", "Y", pitch ), ( "yaw", "Z", yaw ) ]
+        |> List.map
+            (\( key, axis, value ) ->
+                tr []
+                    [ td [] [ key ++ " (about " ++ axis ++ "-axis rotation)" |> text ]
+                    , td [] [ text (value / Basics.pi * 180 |> formatFloat) ]
+                    ]
+            )
+        |> table []
 
 
 view : Model -> Html Msg
@@ -252,7 +260,9 @@ view model =
                 }
     in
     div []
-        [ Scene3d.sunny
+        [ h1 []
+            [ text "Drag The Mouse To Rotate The Cube" ]
+        , Scene3d.sunny
             { entities = [ blockEntity ]
             , camera = camera
             , upDirection = Direction3d.z
@@ -262,6 +272,12 @@ view model =
             , shadows = False
             , dimensions = ( Pixels.pixels 800, Pixels.pixels 600 )
             }
-        , viewQuaternion model.rotation
-        , viewEulerAngles ( roll, pitch, yaw )
+        , div []
+            [ h2 []
+                [ text "Rotation Parameters" ]
+            , h3 [] [ text "In Quaternion Representation" ]
+            , viewQuaternion model.rotation
+            , h3 [] [ text "In Euler's Angles Representation" ]
+            , viewEulerAngles ( roll, pitch, yaw )
+            ]
         ]
