@@ -244,7 +244,7 @@ view model =
             toEulerRotation model.rotation
 
         blockEntity =
-            Scene3d.mesh (Material.matte Color.blue) blockMesh
+            Scene3d.mesh (Material.matte Color.white) blockMesh
 
         cylinderInfo =
             { radius = Length.meters 0.1
