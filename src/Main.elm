@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Angle
+import Array
 import Axis3d
 import Block3d
 import Browser
@@ -17,7 +18,9 @@ import Point3d
 import Quaternion
 import Scene3d
 import Scene3d.Material as Material
+import Scene3d.Mesh as Mesh exposing (Mesh)
 import Sphere3d
+import TriangularMesh
 import Viewpoint3d
 
 
@@ -122,50 +125,100 @@ toEulerRotation q =
     ( roll, pitch, yaw )
 
 
+type WorldCoordinates
+    = WorldCoordinates
+
+
+blockMesh : Mesh.Uniform WorldCoordinates
+blockMesh =
+    let
+        frontLeftTop =
+            Point3d.meters 1 1 1
+
+        frontRightTop =
+            Point3d.meters 1 -1 1
+
+        backLeftTop =
+            Point3d.meters -1 1 1
+
+        backRightTop =
+            Point3d.meters -1 -1 1
+
+        frontLeftBottom =
+            Point3d.meters 1 1 -1
+
+        frontRightBottom =
+            Point3d.meters 1 -1 -1
+
+        backLeftBottom =
+            Point3d.meters -1 1 -1
+
+        backRightBottom =
+            Point3d.meters -1 -1 -1
+
+        triangularMesh =
+            TriangularMesh.indexed
+                (Array.fromList
+                    [ frontLeftTop -- 0
+                    , frontRightTop -- 1
+                    , backLeftTop -- 2
+                    , backRightTop -- 3
+                    , frontLeftBottom -- 4
+                    , frontRightBottom -- 5
+                    , backLeftBottom -- 6
+                    , backRightBottom -- 7
+                    ]
+                )
+                [ ( 0, 1, 4 ) -- front
+                , ( 1, 4, 5 )
+                , ( 0, 2, 4 ) -- left
+                , ( 2, 4, 6 )
+                , ( 2, 3, 6 ) -- back
+                , ( 3, 6, 7 )
+                , ( 1, 3, 5 ) -- right
+                , ( 3, 5, 7 )
+                , ( 0, 1, 2 ) -- top
+                , ( 1, 2, 3 )
+                , ( 4, 5, 6 ) -- bottom
+                , ( 5, 6, 7 )
+                ]
+    in
+    Mesh.indexedFacets triangularMesh
+
+
 view : Model -> Html Msg
 view model =
     let
         ( roll, pitch, yaw ) =
             toEulerRotation model.rotation
+
+        blockEntity =
+            Scene3d.mesh (Material.matte Color.blue) blockMesh
+                |> Scene3d.rotateAround Axis3d.x (Angle.radians roll)
+                |> Scene3d.rotateAround Axis3d.y (Angle.radians pitch)
+                |> Scene3d.rotateAround Axis3d.z (Angle.radians yaw)
+
+        camera =
+            Camera3d.perspective
+                { viewpoint =
+                    Viewpoint3d.lookAt
+                        { focalPoint = Point3d.origin
+                        , eyePoint = Point3d.meters 9 0 0
+                        , upDirection = Direction3d.positiveZ
+                        }
+                , verticalFieldOfView = Angle.degrees 30
+                }
     in
     div []
-        [ Scene3d.unlit
-            { dimensions = ( Pixels.pixels 800, Pixels.pixels 600 )
-            , background = Scene3d.backgroundColor Color.grey
-            , clipDepth = Length.meters 3.4
-            , camera =
-                Camera3d.perspective
-                    { viewpoint =
-                        Viewpoint3d.lookAt
-                            { focalPoint = Point3d.origin
-                            , eyePoint = Point3d.meters 9 0 0
-                            , upDirection = Direction3d.positiveZ
-                            }
-                    , verticalFieldOfView = Angle.degrees 40
-                    }
-            , entities =
-                [ Scene3d.block (Material.color Color.black)
-                    (Block3d.with
-                        { x1 = Length.meters 1
-                        , x2 = Length.meters -1
-                        , y1 = Length.meters 1
-                        , y2 = Length.meters -1
-                        , z1 = Length.meters 1
-                        , z2 = Length.meters -1
-                        }
-                        |> Block3d.scaleAbout Point3d.origin (1 / 2)
-                    )
-                , Scene3d.sphere (Material.color Color.red)
-                    (Sphere3d.atPoint
-                        (Point3d.meters 1 1 1)
-                        (Length.meters 0.3)
-                    )
-                ]
-                    |> Scene3d.group
-                    |> Scene3d.rotateAround Axis3d.x (Angle.radians roll)
-                    |> Scene3d.rotateAround Axis3d.y (Angle.radians pitch)
-                    |> Scene3d.rotateAround Axis3d.z (Angle.radians yaw)
-                    |> List.singleton
+        [ Scene3d.sunny
+            { entities = [ blockEntity ]
+            , camera = camera
+            , upDirection = Direction3d.z
+            , sunlightDirection = Direction3d.yz (Angle.degrees -120)
+            , background = Scene3d.transparentBackground
+            , clipDepth = Length.meters 1
+            , shadows = False
+            , dimensions = ( Pixels.pixels 800, Pixels.pixels 600 )
             }
         , case model.cursor of
             Nothing ->
