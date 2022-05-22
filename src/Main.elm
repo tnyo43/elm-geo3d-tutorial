@@ -199,10 +199,28 @@ formatFloat =
                 ""
                 "+"
                 ""
-                ""
+                "±"
                 ""
     in
     FormatNumber.format locale
+
+
+viewQuaternion : Quaternion.Quaternion -> Html Msg
+viewQuaternion q =
+    let
+        w =
+            Quaternion.getW q
+
+        x =
+            Quaternion.getX q
+
+        y =
+            Quaternion.getY q
+
+        z =
+            Quaternion.getZ q
+    in
+    div [] [ formatFloat w ++ formatFloat x ++ "i" ++ formatFloat y ++ "j" ++ formatFloat z ++ "k" |> text ]
 
 
 viewEulerAngles : ( Float, Float, Float ) -> Html Msg
@@ -244,8 +262,6 @@ view model =
             , shadows = False
             , dimensions = ( Pixels.pixels 800, Pixels.pixels 600 )
             }
-        , div []
-            [ model.rotation |> Quaternion.encode |> Json.Encode.encode 0 |> text ]
-        , div []
-            [ viewEulerAngles ( roll, pitch, yaw ) ]
+        , viewQuaternion model.rotation
+        , viewEulerAngles ( roll, pitch, yaw )
         ]
