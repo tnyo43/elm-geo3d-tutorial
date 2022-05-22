@@ -59,10 +59,10 @@ update msg model =
                             previousPosition
 
                         dx =
-                            0.01 * (x - px)
+                            0.005 * (x - px)
 
                         dy =
-                            0.01 * (y - py)
+                            0.005 * (y - py)
                     in
                     { model
                         | cursor = Just ( x, y )
