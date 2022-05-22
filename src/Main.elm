@@ -8,7 +8,9 @@ import Browser.Events
 import Camera3d
 import Color
 import Direction3d
-import Html exposing (Html, div, text)
+import FormatNumber
+import FormatNumber.Locales as Locales
+import Html exposing (Html, div, table, td, text, tr)
 import Json.Decode
 import Json.Encode
 import Length
@@ -184,6 +186,30 @@ blockMesh =
     Mesh.indexedFacets triangularMesh
 
 
+formatFloat : Float -> String
+formatFloat =
+    let
+        locale =
+            Locales.Locale
+                (Locales.Exact 3)
+                Locales.Western
+                ","
+                "."
+                "-"
+                ""
+                "+"
+                ""
+                ""
+                ""
+    in
+    FormatNumber.format locale
+
+
+viewEulerAngles : ( Float, Float, Float ) -> Html Msg
+viewEulerAngles ( roll, pitch, yaw ) =
+    [ ( "roll", roll ), ( "pitch", pitch ), ( "yaw", yaw ) ] |> List.map (\( key, value ) -> tr [] [ td [] [ text key ], td [] [ text (value / Basics.pi * 180 |> formatFloat) ] ]) |> table []
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -218,17 +244,8 @@ view model =
             , shadows = False
             , dimensions = ( Pixels.pixels 800, Pixels.pixels 600 )
             }
-        , case model.cursor of
-            Nothing ->
-                div [] []
-
-            Just position ->
-                text (position |> Tuple.first |> String.fromFloat)
         , div []
             [ model.rotation |> Quaternion.encode |> Json.Encode.encode 0 |> text ]
         , div []
-            [ roll |> String.fromFloat |> text
-            , pitch |> String.fromFloat |> text
-            , yaw |> String.fromFloat |> text
-            ]
+            [ viewEulerAngles ( roll, pitch, yaw ) ]
         ]
