@@ -260,14 +260,14 @@ view model =
                     cylinderInfo
                 )
             , Scene3d.cylinder
-                (Material.color Color.blue)
+                (Material.color Color.green)
                 (Cylinder3d.startingAt
                     Point3d.origin
                     Direction3d.y
                     cylinderInfo
                 )
             , Scene3d.cylinder
-                (Material.color Color.green)
+                (Material.color Color.blue)
                 (Cylinder3d.startingAt
                     Point3d.origin
                     Direction3d.z
@@ -296,22 +296,25 @@ view model =
     div []
         [ h1 []
             [ text "Drag The Mouse To Rotate The Cube" ]
-        , Scene3d.sunny
-            { entities = [ blockEntity, axiesEntity ] |> Scene3d.group |> rotate |> List.singleton
-            , camera = camera
-            , upDirection = Direction3d.z
-            , sunlightDirection = Direction3d.yz (Angle.degrees -120)
-            , background = Scene3d.transparentBackground
-            , clipDepth = Length.meters 1
-            , shadows = False
-            , dimensions = ( Pixels.pixels 800, Pixels.pixels 600 )
-            }
+        , div []
+            [ Scene3d.sunny
+                { entities = [ blockEntity, axiesEntity ] |> Scene3d.group |> rotate |> List.singleton
+                , camera = camera
+                , upDirection = Direction3d.z
+                , sunlightDirection = Direction3d.yz (Angle.degrees -120)
+                , background = Scene3d.transparentBackground
+                , clipDepth = Length.meters 1
+                , shadows = False
+                , dimensions = ( Pixels.pixels 800, Pixels.pixels 600 )
+                }
+            , "* The cylinders represent the relative coordinate system of the cube (red: x, green: y, blue: z)" |> text
+            ]
         , div []
             [ h2 []
                 [ text "Rotation Parameters" ]
             , h3 [] [ text "In Quaternion Representation" ]
             , viewQuaternion model.rotation
-            , h3 [] [ text "In Euler's Angles Representation" ]
+            , h3 [] [ text "In Euler's Angles Representation (unit: degree)" ]
             , viewEulerAngles ( roll, pitch, yaw )
             ]
         ]
