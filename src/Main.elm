@@ -3,7 +3,6 @@ module Main exposing (main)
 import Angle
 import Array
 import Axis3d
-import Block3d
 import Browser
 import Browser.Events
 import Camera3d
@@ -18,8 +17,7 @@ import Point3d
 import Quaternion
 import Scene3d
 import Scene3d.Material as Material
-import Scene3d.Mesh as Mesh exposing (Mesh)
-import Sphere3d
+import Scene3d.Mesh as Mesh
 import TriangularMesh
 import Viewpoint3d
 
